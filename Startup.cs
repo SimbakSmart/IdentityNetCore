@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityNetCore.Data;
+using IdentityNetCore.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -41,6 +42,7 @@ namespace IdentityNetCore
 
                 options.Lockout.MaxFailedAccessAttempts = 3;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+                options.SignIn.RequireConfirmedEmail = true;
 
             });
 
@@ -49,6 +51,10 @@ namespace IdentityNetCore
                 option.LoginPath = "/Identity/Signin";
                 option.AccessDeniedPath = "/Identity/AccessDenied";
             });
+
+            services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
+
+            services.AddSingleton<IEmailSender, SmtpEmailSender>();
 
             services.AddControllersWithViews();
         }
