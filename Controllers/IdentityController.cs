@@ -34,7 +34,9 @@ namespace IdentityNetCore.Controllers
         {
             if (ModelState.IsValid)
             {
-                if ((await _userManager.FindByEmailAsync(model.Email)) != null)
+                //if ((await _userManager.FindByEmailAsync(model.Email)) != null)
+                //{
+                if (!string.IsNullOrEmpty(model.Email))
                 {
                     var user = new IdentityUser
                     {
@@ -49,8 +51,9 @@ namespace IdentityNetCore.Controllers
                     if (result.Succeeded)
                     {
                         var confirmationLink = Url.ActionLink("ConfirmEmail", "Identity", new { userId = user.Id, @token = token });
-                        await emailSender.SendEmailAsync("info@mydomain.com", user.Email, "Confirm your email address", confirmationLink);
+                        await emailSender.SendEmailAsync("simbak.netmind@gmail.com", user.Email, "Confirm your email address", confirmationLink);
 
+                        //return RedirectToAction("Signin");
                         return RedirectToAction("Signin");
                     }
 
@@ -67,7 +70,7 @@ namespace IdentityNetCore.Controllers
         {
             var user = await _userManager.FindByIdAsync(userId);
 
-            var result = await _userManager.ConfirmEmailAsync(user, token);
+            var result =  await _userManager.ConfirmEmailAsync(user, token);
             if (result.Succeeded)
             {
                 return RedirectToAction("Signin");
@@ -75,9 +78,6 @@ namespace IdentityNetCore.Controllers
 
             return new NotFoundResult();
         }
-
-
-
 
         public async Task<IActionResult> Signin()
         {

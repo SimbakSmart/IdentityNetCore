@@ -19,9 +19,11 @@ namespace IdentityNetCore.Service
 
             using (var client = new SmtpClient(options.Value.Host, options.Value.Port)
             {
+               
                 Credentials = new NetworkCredential(options.Value.Username, options.Value.Password)
             })
             {
+                client.EnableSsl = true;
                 await client.SendMailAsync(mailMessage);
             }
         }

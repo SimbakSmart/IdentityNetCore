@@ -31,8 +31,11 @@ namespace IdentityNetCore
             {
                 o.UseSqlServer(connString);
             });
+
             services.AddIdentity<IdentityUser, IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDBContext>();
+            .AddEntityFrameworkStores<ApplicationDBContext>()
+            .AddDefaultTokenProviders();
+
             services.Configure<IdentityOptions>(options =>
             {
 
