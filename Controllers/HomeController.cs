@@ -24,18 +24,17 @@ namespace IdentityNetCore.Controllers
             return View();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Member")]
         public IActionResult Member()
         {
             return View();
         }
-        
-        [Authorize]
+
+        [Authorize(Roles = "Admin")]
         public IActionResult Admin()
         {
             return View();
         }
-
 
         public IActionResult Privacy()
         {
