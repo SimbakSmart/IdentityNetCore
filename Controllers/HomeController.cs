@@ -24,13 +24,15 @@ namespace IdentityNetCore.Controllers
             return View();
         }
 
-        [Authorize(Roles = "Member")]
+        // [Authorize(Roles = "Member")]
+        [Authorize(Policy = "AdminDep")]
         public IActionResult Member()
         {
             return View();
         }
 
-        [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
+        [Authorize(Policy = "MemberDep")]
         public IActionResult Admin()
         {
             return View();
