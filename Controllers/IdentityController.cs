@@ -1,5 +1,6 @@
 using IdentityNetCore.Models;
 using IdentityNetCore.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
@@ -83,6 +84,38 @@ namespace IdentityNetCore.Controllers
 
             return View(model);
         }
+
+
+        [Authorize]
+        public async Task<IActionResult> MFASetup()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            await _userManager.ResetAuthenticatorKeyAsync(user);
+            var token = await _userManager.GetAuthenticatorKeyAsync(user);
+            var model = new MFAViewModel { Token = token };
+            return View(model);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> MFASetup(MFAViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var succeeded = await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, model.Code);
+                if (succeeded)
+                {
+                    await _userManager.SetTwoFactorEnabledAsync(user, true);
+                }
+                else
+                {
+                    ModelState.AddModelError("Verify", "Your MFA code could not be validated.");
+                }
+            }
+            return View(model);
+        }
+
 
 
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
