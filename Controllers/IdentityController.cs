@@ -89,10 +89,13 @@ namespace IdentityNetCore.Controllers
         [Authorize]
         public async Task<IActionResult> MFASetup()
         {
+            const string provider = "aspnetidentity";
             var user = await _userManager.GetUserAsync(User);
             await _userManager.ResetAuthenticatorKeyAsync(user);
             var token = await _userManager.GetAuthenticatorKeyAsync(user);
-            var model = new MFAViewModel { Token = token };
+
+            var qrCodeUrl = $"otpauth://totp/{provider}:{user.Email}?secret={token}&issuer={provider}&digits=6";
+            var model = new MFAViewModel { Token = token, QRCodeUrl = qrCodeUrl };
             return View(model);
         }
 
@@ -142,24 +145,30 @@ namespace IdentityNetCore.Controllers
             if (ModelState.IsValid)
             {
                 var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, false);
-                if (result.Succeeded)
+
+                if (result.RequiresTwoFactor)
                 {
-                    var user = await _userManager.FindByEmailAsync(model.Username);
-
-                    //var userClaims = await _userManager.GetClaimsAsync(user);
-
-                    //if (!userClaims.Any(x => x.Type == "Department"))
-                    //{
-                    //    ModelState.AddModelError("Claim", "User not in tech department");
-                    //    return View(model);
-                    //}
-
-                    if (await _userManager.IsInRoleAsync(user, "Member"))
-                    {
-                        return RedirectToAction("Member", "Home");
-                    }
-
+                    return RedirectToAction("MFACheck");
                 }
+
+                //if (result.Succeeded)
+                //{
+                //    var user = await _userManager.FindByEmailAsync(model.Username);
+
+                //    //var userClaims = await _userManager.GetClaimsAsync(user);
+
+                //    //if (!userClaims.Any(x => x.Type == "Department"))
+                //    //{
+                //    //    ModelState.AddModelError("Claim", "User not in tech department");
+                //    //    return View(model);
+                //    //}
+
+                //    if (await _userManager.IsInRoleAsync(user, "Member"))
+                //    {
+                //        return RedirectToAction("Member", "Home");
+                //    }
+
+                //}
                 else
                 {
                     ModelState.AddModelError("Login", "Cannot login.");
@@ -167,6 +176,26 @@ namespace IdentityNetCore.Controllers
             }
             return View(model);
         }
+
+        public IActionResult MFACheck()
+        {
+            return View(new MNFACheckViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MFACheck(MNFACheckViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, false, false);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home", null);
+                }
+            }
+            return View(model);
+        }
+
 
         public async Task<IActionResult> AccessDenied()
         {
