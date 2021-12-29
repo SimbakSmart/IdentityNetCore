@@ -7,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Text;
 
 namespace IdentityNetCore
 {
@@ -72,6 +74,23 @@ namespace IdentityNetCore
 
                 options.AppId = Configuration["FacebookAppId"];
                 options.AppSecret = Configuration["FacebookAppSecret"];
+            });
+
+            var issuer = Configuration["Tokens:Issuer"];
+            var audience = Configuration["Tokens:Audience"];
+            var key = Configuration["Tokens:Key"];
+
+            services.AddAuthentication().AddJwtBearer(options =>
+            {
+
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidIssuer = issuer,
+                    ValidAudience = audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+                };
             });
 
             services.AddControllersWithViews();

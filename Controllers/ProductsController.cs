@@ -1,4 +1,6 @@
 ﻿using IdentityNetCore.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 
@@ -10,6 +12,7 @@ namespace IdentityNetCore.Controllers
     {
 
         [Route(template: "List")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public List<Product> GetList()
         {
             var chair = new Product { Name = "Chair", Price = 100 };
